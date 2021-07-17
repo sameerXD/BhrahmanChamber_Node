@@ -1,4 +1,5 @@
 var express = require("express");
+
 var app = express();
 var bodyParser = require("body-parser");
 const Razorpay = require("razorpay");
@@ -44,6 +45,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 const sql = require("./database.js");
 const { json } = require("body-parser");
 const sqlCon = sql.sqlConnector();
+const {
+  requireAuth,
+  checkCurrentUser,
+} = require("./middleware/authMiddleware");
 
 //call status changer to mark out defaulters on server startup
 setInterval(function () {
@@ -102,10 +107,6 @@ let tempSubscriptionPlans = {
     noOfListing: 3,
   },
 };
-
-app.get("/hello", (req, res) => {
-  res.send("hello world");
-});
 
 app.get("/signUp", (req, res) => {
   res.render("signUp");
@@ -179,7 +180,7 @@ app.post("/signIn", async (req, res) => {
           );
         } else if (result[0].plan !== "expired") {
           console.log("welcome " + email);
-          res.cookie("jwt", token, { maxAge: maxAge * 1000 });
+          res.cookie("jwt", token, { maxAge: maxAge * 1000, httpOnly: true });
           res.status(201).json({ user: email });
         }
       } else {
@@ -395,7 +396,7 @@ app.post("/is-order-complete/", async (req, res) => {
   }
   const token = await createToken(user.email);
   console.log("token ", token);
-  res.cookie("jwt", token, { maxAge: maxAge * 1000 });
+  res.cookie("jwt", token, { maxAge: maxAge * 1000, httpOnly: true });
   res.redirect("/homeAfterLogin/" + user.email);
 });
 
@@ -412,6 +413,9 @@ app.post("/saveUser", async (req, res) => {
       console.log(result);
 
       if (result.length === 0) {
+        //create url token
+        const urlToken = await createToken(req.body);
+
         //send new signUp a reminder via mail
 
         var mailOptions = {
@@ -420,7 +424,7 @@ app.post("/saveUser", async (req, res) => {
           subject: "Welcome To Brahman Chamber Of Commerce",
           text: "Please follow the link given bellow",
           html: `<h1>Please copy the link given bellow in your browser</h1><br>
-          <a>http://localhost:3000/plans/${req.body.email}</a>`,
+          <a>http://localhost:3000/plans/${req.body.email}/${urlToken}</a>`,
         };
         // check password strength
         let passStrength = passwordStrength(req.body.password, defaultOptions);
@@ -487,7 +491,7 @@ app.post("/saveUser", async (req, res) => {
 });
 
 //renew the subscription
-app.get("/renewSubscription/:email", (req, res) => {
+app.get("/renewSubscription/:email", requireAuth, (req, res) => {
   //setting the coupon object to default to remove the settings
   subscriptionPlans.isEdited = false;
   subscriptionPlans.isCouponApllied = false;
@@ -519,14 +523,14 @@ app.get("/page-pricing", (req, res) => {
 app.get("/listingfull", (req, res) => {
   res.render("listing-full");
 });
-app.get("/page-profile/:email", (req, res) => {
+app.get("/page-profile/:email", requireAuth, (req, res) => {
   res.render("page-profile", { email: req.params.email });
 });
-app.get("/page-user/:email", (req, res) => {
+app.get("/page-user/:email", requireAuth, (req, res) => {
   res.render("page-user", { email: req.params.email });
 });
 //add listing
-app.get("/addListingPage/:email", (req, res) => {
+app.get("/addListingPage/:email", requireAuth, (req, res) => {
   res.render("page-addListing", { email: req.params.email });
 });
 
@@ -539,7 +543,7 @@ app.get("/addListingPage/:email", (req, res) => {
 //   // }
 // });
 
-app.post("/addListing/:email", (req, res) => {
+app.post("/addListing/:email", requireAuth, (req, res) => {
   let sql = "SELECT plan FROM users WHERE email = ?";
   sqlCon.query(sql, [req.params.email], (err, result) => {
     if (err) throw err;
@@ -596,7 +600,7 @@ app.post("/addListing/:email", (req, res) => {
 });
 
 //uploading images from addlisting
-app.post("/upload", async (req, res, next) => {
+app.post("/upload", requireAuth, async (req, res, next) => {
   console.log("indside uploading files");
   try {
     console.log(req.files.file);
@@ -638,7 +642,7 @@ app.post("/upload", async (req, res, next) => {
 });
 
 //route to get number of addlisting that can be done
-app.get("/numberOfAddListing/:email", (req, res) => {
+app.get("/numberOfAddListing/:email", requireAuth, (req, res) => {
   let sql = "SELECT plan FROM users WHERE email = ?";
   sqlCon.query(sql, [req.params.email], (err, result) => {
     if (err) throw err;
@@ -739,7 +743,7 @@ app.post("/search", (req, res) => {
 });
 
 //admin generate coupon
-app.post("/admin/generateCoupon/:email", (req, res) => {
+app.post("/admin/generateCoupon/:email", requireAuth, (req, res) => {
   let couponName = req.body.couponName;
   let couponExpire = req.body.couponExpire;
   let couponAmount = req.body.couponAmount;
@@ -771,9 +775,22 @@ app.get("/allPlans", (req, res) => {
 });
 //get plans for signup subscription
 
-app.get("/plans/:email", (req, res) => {
-  console.log(req.params.email);
-  res.render("plans", { email: req.params.email });
+app.get("/plans/:email/:urlToken", (req, res) => {
+  if (req.params.urlToken) {
+    jwt.verify(req.params.urlToken, "stringSecret", (err, decodedToken) => {
+      if (err) {
+        console.log(err);
+        res.redirect("/home");
+      } else {
+        console.log(decodedToken);
+        console.log(req.params.email);
+        res.render("plans", { email: req.params.email });
+        next();
+      }
+    });
+  } else {
+    res.redirect("/home");
+  }
 });
 
 //apply coupon
@@ -845,7 +862,7 @@ app.post("/applyCoupon/:email", (req, res) => {
   });
 });
 
-app.get("/admin/createCoupon/:email", (req, res) => {
+app.get("/admin/createCoupon/:email", requireAuth, (req, res) => {
   let sql = "SELECT * FROM couponsystem";
   sqlCon.query(sql, (err, result) => {
     if (err) throw err;
@@ -854,7 +871,7 @@ app.get("/admin/createCoupon/:email", (req, res) => {
 });
 
 //delete coupon by admin
-app.get("/deleteCoupon/:coupon/:email", (req, res) => {
+app.get("/deleteCoupon/:coupon/:email", requireAuth, (req, res) => {
   console.log("deleting coupon on admin request " + req.params.coupon);
   let sql = "UPDATE couponsystem SET status = 'expired' WHERE coupon = ?";
   sqlCon.query(sql, [req.params.coupon], (err, result) => {
@@ -883,7 +900,7 @@ app.get("/getGallery", (req, res) => {
 });
 
 //get req for allAddlisting for signed in users
-app.get("/allAddlisting", (req, res) => {
+app.get("/allAddlisting", requireAuth, (req, res) => {
   let sql = "SELECT * FROM `add_listing`";
   sqlCon.query(sql, (err, result) => {
     if (err) throw err;
@@ -891,7 +908,7 @@ app.get("/allAddlisting", (req, res) => {
   });
 });
 
-app.get("/homeAfterLogin/:email", (req, res) => {
+app.get("/homeAfterLogin/:email", requireAuth, checkCurrentUser, (req, res) => {
   console.log("inside home after login");
   let sql =
     "SELECT * FROM `add_listing` INNER JOIN users ON add_listing.email = users.email ";
@@ -904,21 +921,21 @@ app.get("/homeAfterLogin/:email", (req, res) => {
   });
 });
 
-app.post("/comment", (req, res) => {
+app.post("/comment", requireAuth, (req, res) => {
   let comment1 = req.body.comment;
   let email = req.body.email;
   let addListingId = req.body.addListingId;
   comment(comment1, addListingId, email);
 });
 
-app.post("/like", (req, res) => {
+app.post("/like", requireAuth, (req, res) => {
   let email = req.body.email;
   let addListingId = req.body.addListingId;
   like(email, addListingId);
 });
 
 //my profile
-app.get("/myProfile/:email", (req, res) => {
+app.get("/myProfile/:email", requireAuth, (req, res) => {
   let email = req.params.email;
   let sql =
     "SELECT email,name,mobileNumber,companyName,plan FROM users WHERE email = ?";
@@ -929,7 +946,7 @@ app.get("/myProfile/:email", (req, res) => {
 });
 
 //update profile
-app.post("/updateProfile", (req, res) => {
+app.post("/updateProfile", requireAuth, (req, res) => {
   let sql = "UPDATE users SET name = ?, mobileNumber= ? WHERE email = ?";
   sqlCon.query(
     sql,
@@ -941,7 +958,7 @@ app.post("/updateProfile", (req, res) => {
   );
 });
 //admin get all users
-app.get("/admin/getAllUsers", (req, res) => {
+app.get("/admin/getAllUsers", requireAuth, (req, res) => {
   let sql = "SELECT email, name, mobileNumber, companyName, plan FROM `users`";
   sqlCon.query(sql, (err, result) => {
     if (err) throw err;
@@ -979,7 +996,7 @@ app.post("/adminLogin", (req, res) => {
       );
       if (isCorrectPassword) {
         const token = await createToken(req.body.email);
-        res.cookie("jwt", token, { maxAge: maxAge * 1000 });
+        res.cookie("jwt", token, { maxAge: maxAge * 1000, httpOnly: true });
         res.status(201).json({ user: req.body.email });
       } else {
         res.status(400).json({ error: "Incorrect Password!" });
@@ -988,7 +1005,7 @@ app.post("/adminLogin", (req, res) => {
   });
 });
 //get users add listing
-app.get("/allAddlisting/:email", (req, res) => {
+app.get("/allAddlisting/:email", requireAuth, (req, res) => {
   let sql = "SELECT * FROM `add_listing` WHERE email = ?";
   sqlCon.query(sql, [req.params.email], (err, result) => {
     if (err) throw err;
@@ -996,7 +1013,7 @@ app.get("/allAddlisting/:email", (req, res) => {
   });
 });
 
-app.post("/admin/accessToggle/:email", (req, res) => {
+app.post("/admin/accessToggle/:email", requireAuth, (req, res) => {
   console.log("inside access togle");
 
   let sql = "SELECT access FROM users WHERE email = ?";
@@ -1024,6 +1041,11 @@ app.post("/admin/accessToggle/:email", (req, res) => {
       });
     }
   });
+});
+
+app.get("/logOut", (req, res) => {
+  res.cookie("jwt", "", { maxAge: 1 });
+  res.redirect("/home");
 });
 
 //functions----------------------------------------------------------------------------------------------------------------
@@ -1219,6 +1241,26 @@ const createToken = async (id) => {
     expiresIn: maxAge,
   });
 };
+
+// const requireAuth = (req, res, next) => {
+//   const token = req.cookies.jwt;
+
+//   //check if json webtoken exist and is valid
+//   if (token) {
+//     jwt.verify(token, "stringSecret", (err, decodedToken) => {
+//       if (err) {
+//         console.log(err);
+//         res.redirect("/home");
+//       } else {
+//         console.log(decodedToken);
+
+//         next();
+//       }
+//     });
+//   } else {
+//     res.redirect("/home");
+//   }
+// };
 
 app.listen(3000, () => {
   console.log("server started at port 3000");
