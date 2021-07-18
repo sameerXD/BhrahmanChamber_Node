@@ -34,6 +34,8 @@ const requireAuth = (req, res, next) => {
 const checkCurrentUser = (req, res, next) => {
   var cookies = parseCookies(req);
   let token = cookies.jwt;
+  let urlToken = cookies.urlJwt;
+
   if (token) {
     jwt.verify(token, "stringSecret", (err, decodedToken) => {
       if (err) {
@@ -52,7 +54,17 @@ const checkCurrentUser = (req, res, next) => {
         next();
       }
     });
-  } else {
+  } else if (urlToken) {
+    jwt.verify(urlToken, "urlStringSecret", (err, decodedToken) => {
+      if (err) {
+        console.log(err);
+        res.render("/home");
+      } else {
+        console.log("user is paying", decodedToken);
+        req.user = decodedToken.id;
+        next();
+      }
+    });
   }
 };
 

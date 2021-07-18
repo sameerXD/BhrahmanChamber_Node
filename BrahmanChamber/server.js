@@ -227,9 +227,10 @@ app.post("/order/:plan", (req, res) => {
       amount1 = subscriptionPlans.Professional.price;
     } else if (req.params.plan == "Business") {
       amount1 = subscriptionPlans.Business.price;
-    } else if (req.params.plan == "Enterprise") {
-      amount1 = subscriptionPlans.Enterprise.price;
     }
+    //  else if (req.params.plan == "Enterprise") {
+    //   amount1 = subscriptionPlans.Enterprise.price;
+    // }
   }
 
   let options = {
@@ -245,6 +246,167 @@ app.post("/order/:plan", (req, res) => {
 });
 
 //check the authenticity of order and if the order was successful
+// app.post("/is-order-complete/", checkCurrentUser, async (req, res) => {
+//   console.log("walaah user ", req.user);
+//   let user = req.user;
+//   console.log("inside payment authentication");
+//   const secret = "12345678";
+//   console.log(req.body);
+
+//   const shasum = crypto.createHmac("sha256", secret);
+//   shasum.update(JSON.stringify(req.body));
+//   const digest = shasum.digest("hex");
+
+//   console.log(
+//     "header and body hex" + digest,
+//     req.headers["x-razorpay-signature"]
+//   );
+
+//   if (digest === req.headers["x-razorpay-signature"]) {
+//     console.log("request is legit for user " + user.email);
+//     const token = await createToken(user.email);
+//     console.log("token ", token);
+//     res.cookie("jwt", token, { maxAge: maxAge * 1000, httpOnly: true });
+
+//     // identify the plan buyed by the user
+//     let plan;
+
+//     //if coupon was applied or not
+//     if (
+//       subscriptionPlans.isCouponApllied === true &&
+//       subscriptionPlans.isEdited === true
+//     ) {
+//       console.log(
+//         "will compare ",
+//         req.body.payload.payment.entity.amount,
+//         tempSubscriptionPlans
+//       );
+
+//       if (
+//         req.body.payload.payment.entity.amount ===
+//         tempSubscriptionPlans.Starter.price
+//       ) {
+//         plan = "Starter";
+//       } else if (
+//         req.body.payload.payment.entity.amount ===
+//         tempSubscriptionPlans.Business.price
+//       ) {
+//         plan = "Business";
+//       } else if (
+//         req.body.payload.payment.entity.amount ===
+//         tempSubscriptionPlans.Professional.price
+//       ) {
+//         plan = "Professional";
+//       } else if (
+//         req.body.payload.payment.entity.amount ===
+//         tempSubscriptionPlans.Enterprise.price
+//       ) {
+//         plan = "Enterprise";
+//       }
+
+//       //as this payment was done by coupon saving this information to db so that user doesnt apply coupon again
+//       let sql =
+//         "INSERT INTO `appliedcoupon` (`id`, `coupon`, `email`) VALUES (NULL, ? ,?) ";
+//       sqlCon.query(
+//         sql,
+//         [tempSubscriptionPlans.coupon, user.email],
+//         (err, result) => {
+//           if (err) throw err;
+//           console.log("coupon applied inserted in database");
+//         }
+//       );
+//       //as the coupon is applied subtract number of users from the coupon table
+//       subtractUser(tempSubscriptionPlans.coupon);
+//     } else {
+//       if (
+//         req.body.payload.payment.entity.amount ===
+//         subscriptionPlans.Starter.price
+//       ) {
+//         plan = "Starter";
+//       } else if (
+//         req.body.payload.payment.entity.amount ===
+//         subscriptionPlans.Business.price
+//       ) {
+//         plan = "Business";
+//       } else if (
+//         req.body.payload.payment.entity.amount ===
+//         subscriptionPlans.Professional.price
+//       ) {
+//         plan = "Professional";
+//       } else if (
+//         req.body.payload.payment.entity.amount ===
+//         subscriptionPlans.Enterprise.price
+//       ) {
+//         plan = "Enterprise";
+//       }
+//     }
+
+//     console.log(
+//       "this payment info will be saved inside database ",
+//       req.body.payload.payment.entity
+//     );
+//     console.log("payment id: ", req.body.payload.payment.entity.id);
+//     console.log("order id: ", req.body.payload.payment.entity.order_id);
+//     console.log("payment method: ", req.body.payload.payment.entity.method);
+//     console.log(
+//       "email used for payment: ",
+//       req.body.payload.payment.entity.email
+//     );
+//     console.log(
+//       "contact used for payment: ",
+//       req.body.payload.payment.entity.contact
+//     );
+
+//     let sql =
+//       "INSERT INTO payment_information (email,transactionId,orderId,phoneNumber,method,amount) VALUES (?,?,?,?,?,?)";
+//     sqlCon.query(
+//       sql,
+//       [
+//         req.body.payload.payment.entity.email,
+//         req.body.payload.payment.entity.id,
+//         req.body.payload.payment.entity.order_id,
+//         req.body.payload.payment.entity.contact,
+//         req.body.payload.payment.entity.method,
+//         req.body.payload.payment.entity.amount,
+//       ],
+//       (err, result) => {
+//         if (err) throw err;
+//         console.log(
+//           req.body.payload.payment.entity.id +
+//             " transaction id inserted in payment table"
+//         );
+//         subscriptionPlans.isCouponApllied = false;
+//         subscriptionPlans.isEdited = false;
+//       }
+//     );
+//     try {
+//       if (Object.keys(user).length > 1) {
+//         console.log("new signUp");
+//         try {
+//           user = Object.assign(user, { plan: plan });
+
+//           // res.cookie("jwt", token, { maxAge: maxAge * 1000 });
+//           saveUser(user);
+//         } catch (error) {
+//           console.log(error);
+//         }
+
+//         // res.status(201).json({ user: user.email, token });
+//       } else if (Object.keys(user).length === 1) {
+//         console.log("inside renew subscription almost done payment done");
+//         renewSubscription(plan);
+//       }
+//     } catch (error) {
+//       console.log(error);
+//     }
+//   }
+//   // const token = await createToken(user.email);
+//   // console.log("token ", token);
+//   // res.cookie("jwt", token, { maxAge: maxAge * 1000, httpOnly: true });
+//   //res.redirect("/homeAfterLogin/" + user.email);
+//   res.sendStatus(201).json("ok");
+// });
+
 app.post("/is-order-complete/", async (req, res) => {
   console.log("inside payment authentication");
   const secret = "12345678";
@@ -260,6 +422,9 @@ app.post("/is-order-complete/", async (req, res) => {
   );
 
   if (digest === req.headers["x-razorpay-signature"]) {
+    const token = await createToken(user.email);
+    console.log("token ", token);
+    res.cookie("jwt", token, { maxAge: maxAge * 1000, httpOnly: true });
     console.log("request is legit for user " + user.email);
 
     // identify the plan buyed by the user
@@ -394,9 +559,10 @@ app.post("/is-order-complete/", async (req, res) => {
       console.log(error);
     }
   }
-  const token = await createToken(user.email);
-  console.log("token ", token);
-  res.cookie("jwt", token, { maxAge: maxAge * 1000, httpOnly: true });
+  // const token = await createToken(user.email);
+  // console.log("token ", token);
+  // res.cookie("jwt", token, { maxAge: maxAge * 1000, httpOnly: true });
+  res.locals.user = user;
   res.redirect("/homeAfterLogin/" + user.email);
 });
 
@@ -413,19 +579,6 @@ app.post("/saveUser", async (req, res) => {
       console.log(result);
 
       if (result.length === 0) {
-        //create url token
-        const urlToken = await createToken(req.body);
-
-        //send new signUp a reminder via mail
-
-        var mailOptions = {
-          from: "sameer.vashisth.egs@gmail.com",
-          to: req.body.email,
-          subject: "Welcome To Brahman Chamber Of Commerce",
-          text: "Please follow the link given bellow",
-          html: `<h1>Please copy the link given bellow in your browser</h1><br>
-          <a>http://localhost:3000/plans/${req.body.email}/${urlToken}</a>`,
-        };
         // check password strength
         let passStrength = passwordStrength(req.body.password, defaultOptions);
         console.log("password strength ", passStrength.value);
@@ -451,6 +604,20 @@ app.post("/saveUser", async (req, res) => {
           } else {
             console.log("users object length " + Object.keys(user).length);
             user.password = hashed;
+
+            //create url token
+            const urlToken = await createTokenForUrl(user);
+
+            //send new signUp a reminder via mail
+
+            var mailOptions = {
+              from: "sameer.vashisth.egs@gmail.com",
+              to: req.body.email,
+              subject: "Welcome To Brahman Chamber Of Commerce",
+              text: "Please follow the link given bellow",
+              html: `<h1>Please copy the link given bellow in your browser</h1><br>
+          <a>http://localhost:3000/plans/${req.body.email}/${urlToken}</a>`,
+            };
             mailUser(mailOptions);
             console.log(user);
             res.status(201).json({ email: user.email, plan: true });
@@ -777,15 +944,20 @@ app.get("/allPlans", (req, res) => {
 
 app.get("/plans/:email/:urlToken", (req, res) => {
   if (req.params.urlToken) {
-    jwt.verify(req.params.urlToken, "stringSecret", (err, decodedToken) => {
+    jwt.verify(req.params.urlToken, "urlStringSecret", (err, decodedToken) => {
       if (err) {
         console.log(err);
         res.redirect("/home");
       } else {
         console.log(decodedToken);
+        user = decodedToken.id;
         console.log(req.params.email);
+        res.cookie("urlJwt", req.params.urlToken, {
+          maxAge: 24 * 60 * 60 * 1000,
+          httpOnly: true,
+        });
+
         res.render("plans", { email: req.params.email });
-        next();
       }
     });
   } else {
@@ -1092,7 +1264,7 @@ function saveUser(data) {
     query,
     [email, password, name, mobileNumber, companyName, plan],
     (err, result) => {
-      if (err) throw err;
+      if (err) console.log(err);
       console.log("new user signedUp " + result);
     }
   );
@@ -1100,7 +1272,7 @@ function saveUser(data) {
 
 //function for changing status
 function planStatus() {
-  console.log("calling planStatus after three seconds");
+  // console.log("calling planStatus after three seconds");
   let subs_time = 365;
   let sql =
     "UPDATE users SET plan = 'expired' WHERE{fn TIMESTAMPDIFF(SQL_TSI_DAY," +
@@ -1126,15 +1298,15 @@ function addRenewAll() {
   let sql = "SELECT email FROM `users` WHERE plan = 'expired'";
   sqlCon.query(sql, (err, result) => {
     if (err) throw err;
-    console.log(result.length);
+    // console.log(result.length);
     for (let key in result) {
-      console.log(result[key].email);
+      // console.log(result[key].email);
       //check if the expired user has a subscription in renew subscription tab;e
       let sql = "SELECT * FROM `renew_subscription` WHERE email =?";
       sqlCon.query(sql, [result[key].email], (err, result) => {
         if (err) throw err;
         if (result.length == 0) {
-          console.log("no renewd subscription ");
+          // console.log("no renewd subscription ");
         } else if (result.length >= 1) {
           console.log("found renewd subscription for " + result[0].email);
           //adding subscription to users table when subscription found
@@ -1185,7 +1357,7 @@ function subtractUser(coupon) {
 
 //function to delete the coupon which has expired both by time or by number of users
 function expireCoupon() {
-  console.log("checking for expired coupon in 5 sec");
+  // console.log("checking for expired coupon in 5 sec");
 
   let sql =
     "UPDATE couponsystem SET status = 'expired' WHERE ({fn TIMESTAMPDIFF(SQL_TSI_DAY, NOW(),couponExpire)}) <=0 OR noOfAllowedUser <=0";
@@ -1239,6 +1411,12 @@ const maxAge = 3 * 24 * 60 * 60;
 const createToken = async (id) => {
   return jwt.sign({ id }, "stringSecret", {
     expiresIn: maxAge,
+  });
+};
+
+const createTokenForUrl = async (id) => {
+  return jwt.sign({ id }, "urlStringSecret", {
+    expiresIn: 24 * 60 * 60,
   });
 };
 
