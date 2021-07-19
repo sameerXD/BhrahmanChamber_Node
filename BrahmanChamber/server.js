@@ -11,7 +11,7 @@ const { defaultOptions } = require("./index");
 //encrypt password
 const bcrypt = require("bcrypt");
 //json web token
-const jwt = require("jsonwebtoken");
+//const jwt = require("jsonwebtoken");
 //public folder frontend
 var path = require("path");
 app.use(express.static(path.join(__dirname, "public")));
@@ -36,6 +36,8 @@ const razorpay = new Razorpay({
   key_id: "rzp_test_YALeH69IqswJJf",
   key_secret: "FHO20UN841BH5w2OCTqpRD40",
 });
+
+const jwt = require("jsonwebtoken");
 
 app.set("view engine", "ejs");
 
@@ -615,8 +617,8 @@ app.post("/saveUser", async (req, res) => {
               to: req.body.email,
               subject: "Welcome To Brahman Chamber Of Commerce",
               text: "Please follow the link given bellow",
-              html: `<h1>Please copy the link given bellow in your browser</h1><br>
-          <a>http://localhost:3000/plans/${req.body.email}/${urlToken}</a>`,
+              html: `<h1>Please click the link given bellow in your browser</h1><br>
+          <a href = 'http://localhost:3000/plans/${req.body.email}/${urlToken}'>Link</a>`,
             };
             mailUser(mailOptions);
             console.log(user);
@@ -767,7 +769,7 @@ app.post("/addListing/:email", requireAuth, (req, res) => {
 });
 
 //uploading images from addlisting
-app.post("/upload", requireAuth, async (req, res, next) => {
+app.post("/file-upload", async (req, res, next) => {
   console.log("indside uploading files");
   try {
     console.log(req.files.file);
@@ -1220,6 +1222,87 @@ app.get("/logOut", (req, res) => {
   res.redirect("/home");
 });
 
+//forget password
+app.post("/forgetPassword", (req, res) => {
+  let email = req.body.email;
+  console.log(email, " forgot his/her password");
+
+  let sql = "SELECT email FROM users WHERE email = ?";
+
+  sqlCon.query(sql, [email], async (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    if (result.length > 0) {
+      //create url token
+      const urlToken = await createTokenForUrl(email);
+
+      var mailOptions = {
+        from: "sameer.vashisth.egs@gmail.com",
+        to: req.body.email,
+        subject: "Welcome To Brahman Chamber Of Commerce",
+        text: "Forget Password",
+        html: `<h1>Please change your password by clicking the link below</h1><br>
+  <a href = 'http://localhost:3000/changePassword/${urlToken}'>Link</a>`,
+      };
+      mailUser(mailOptions);
+      res.status(201).json({ user: email });
+    } else {
+      res.status(400).json({ error: { email: "email doesnt exist" } });
+    }
+  });
+});
+
+app.get("/changePassword/:urlToken", (req, res) => {
+  if (req.params.urlToken) {
+    jwt.verify(req.params.urlToken, "urlStringSecret", (err, decodedToken) => {
+      if (err) {
+        console.log(err);
+        res.status(400).json({ error: { token: "Invalid Token" } });
+        res.redirect("/home");
+      } else {
+        res.cookie("jwtUrl", req.params.urlToken, {
+          maxAge: 24 * 60 * 60,
+          httpOnly: true,
+        });
+        res.render("forgetPassword", { email: decodedToken.id });
+      }
+    });
+  } else {
+    res.status(400).json({ error: { token: "No Token" } });
+    res.redirect("/home");
+  }
+});
+
+app.post("/changePassword", checkCurrentUser, (req, res) => {
+  var cookies = parseCookies(req);
+  //console.log("cookies ", cookies);
+
+  let urlToken = cookies.jwtUrl;
+  console.log(urlToken);
+
+  jwt.verify(urlToken, "urlStringSecret", (err, decodedToken) => {
+    if (err) {
+      console.log(err);
+      res.render("/home");
+    } else {
+      console.log("user is paying", decodedToken);
+      req.user = decodedToken.id;
+      changePassword(req.body, req.user);
+    }
+  });
+});
+
+//change password for logined users
+app.get("/changePasswordForLogin/:email", requireAuth, (req, res) => {
+  res.render("forgetPassword", { email: req.params.email });
+});
+
+app.post("changePasswordForLogin/:email", requireAuth, (req, res) => {
+  if (req.body.password === req.body.confirmPassword) {
+    changePassword(req.body, req.params.email);
+  }
+});
 //functions----------------------------------------------------------------------------------------------------------------
 
 //function to push gallery array into database
@@ -1440,6 +1523,32 @@ const createTokenForUrl = async (id) => {
 //   }
 // };
 
+//change password
+async function changePassword(body, email) {
+  console.log(" body", body, " email ", email);
+  const salt = await bcrypt.genSalt(10);
+  const hashed = await bcrypt.hash(body.password, salt);
+
+  let sql = "update users set password = ? where email = ?";
+  sqlCon.query(sql, [hashed, email], (err, result) => {
+    if (err) console.log(err);
+    console.log("password updated", sql);
+  });
+}
+
+//get cookies from headers and put them in headerrs
+function parseCookies(request) {
+  var list = {},
+    rc = request.headers.cookie;
+
+  rc &&
+    rc.split(";").forEach(function (cookie) {
+      var parts = cookie.split("=");
+      list[parts.shift().trim()] = decodeURI(parts.join("="));
+    });
+
+  return list;
+}
 app.listen(3000, () => {
   console.log("server started at port 3000");
 });

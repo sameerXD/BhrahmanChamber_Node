@@ -45,9 +45,10 @@ const checkCurrentUser = (req, res, next) => {
         console.log(decodedToken);
         let sql =
           "SELECT email,name,mobileNumber,companyName,plan FROM users WHERE email = ?";
-        sqlCon.query(sql, [decodedToken.id], (err, result) => {
+        sqlCon.query(sql, [decodedToken.id], async (err, result) => {
           if (err) console.log(err);
           console.log(result[0]);
+
           res.locals.user = result[0];
         });
 
