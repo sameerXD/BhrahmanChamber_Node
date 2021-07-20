@@ -1,24 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <!-- Basic Page Needs -->
+    <meta charset="utf-8" />
+    <!--[if IE
+      ]><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"
+    /><![endif]-->
+    <title>BCC</title>
+
+    <meta name="author" content="themesflat.com" />
+
+    <!-- Mobile Specific Metas -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+
+    <!-- Bootstrap  -->
+    <link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.css" />
+
+    <!-- Theme Style -->
+    <link rel="stylesheet" type="text/css" href="/stylesheets/style.css" />
+
+    <!-- Responsive -->
+    <link rel="stylesheet" type="text/css" href="/stylesheets/responsive.css" />
+
+    <!-- REVOLUTION LAYERS STYLES -->
+    <link rel="stylesheet" type="text/css" href="/revolution/css/layers.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/revolution/css/settings.css"
+    />
+
+    <!-- Animation Style -->
+    <link rel="stylesheet" type="text/css" href="/stylesheets/animate.css" />
+
+    <!-- Favicon and touch icons  -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <link
+      href="/icon/apple-touch-icon-48-precomposed.png"
+      rel="apple-touch-icon-precomposed"
+      sizes="48x48"
+    />
+    <link
+      href="/icon/apple-touch-icon-32-precomposed.png"
+      rel="apple-touch-icon-precomposed"
+    />
+    <link href="/icon/favicon.png" rel="shortcut icon" />
+
     <style>
       .card-pricing.popular {
         z-index: 1;
         border: 3px solid #007bff;
       }
+
       .card-pricing .list-unstyled li {
         padding: 0.5rem 0;
         color: #6c757d;
       }
+
+      .back {
+        margin: 5px;
+        margin-left: 30px;
+        border-radius: 5px;
+      }
+
+      .back button {
+        border-radius: 20px;
+        font-size: 22px;
+      }
     </style>
+    <!-- razorpay -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <!-- ajex search bar -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js "></script>
+
+    <script src="/javascript/bootstrap3-typeahead.min.js"></script>
+
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </head>
-  <body>
+  <body class="header_sticky">
+    <div class="back">
+      <button style="text-decoration: none; color: white">
+        <a
+          href="http://localhost:3000/homeAfterLogin/muskan@gmail.com"
+          style="text-decoration: none; color: white"
+        >
+          Back
+        </a>
+      </button>
+    </div>
     <!-- <input type="text" id="email" value="<%=email%>" />
     <form id="applyCoupon">
       <input type="text" name="coupon" />
@@ -54,9 +133,6 @@
           <div class="card-body pt-0">
             <ul class="list-unstyled mb-4">
               <li id="starterAddListing">Up to 5 users</li>
-              <li>Basic support on Github</li>
-              <li>Monthly updates</li>
-              <li>Free cancelation</li>
             </ul>
             <button
               type="button"
@@ -84,9 +160,6 @@
           <div class="card-body pt-0">
             <ul class="list-unstyled mb-4">
               <li id="professionalAddListing">Up to 5 users</li>
-              <li>Basic support on Github</li>
-              <li>Monthly updates</li>
-              <li>Free cancelation</li>
             </ul>
             <a
               href="https://www.totoprayogo.com"
@@ -114,9 +187,6 @@
           <div class="card-body pt-0">
             <ul class="list-unstyled mb-4">
               <li id="businessAddListing">Up to 5 users</li>
-              <li>Basic support on Github</li>
-              <li>Monthly updates</li>
-              <li>Free cancelation</li>
             </ul>
             <button
               type="button"
@@ -159,10 +229,18 @@
         </div> -->
       </div>
     </div>
-    <form id="applyCoupon" style="margin-left: auto;margin-right: auto;display: block;    justify-content: center;
-    align-items: center;
-    text-align: center;">
-      <input type="text" name="coupon" />
+    <form
+      id="applyCoupon"
+      style="
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      "
+    >
+      <input type="text" name="coupon" style="width: 322px" />
       <button type="submit" class="btn btn-primary">apply coupon</button>
     </form>
     <div class="text-muted mt-5 mb-5 text-center small">

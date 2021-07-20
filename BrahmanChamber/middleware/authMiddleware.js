@@ -49,10 +49,9 @@ const checkCurrentUser = (req, res, next) => {
           if (err) console.log(err);
           console.log(result[0]);
 
-          res.locals.user = result[0];
+          res.locals.user = await result[0];
+          next();
         });
-
-        next();
       }
     });
   } else if (urlToken) {

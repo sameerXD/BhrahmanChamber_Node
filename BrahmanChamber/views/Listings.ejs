@@ -51,7 +51,7 @@
                 <div class="row">
                     <div class="col-lg-4">
                         <div id="log" class="log float-left">
-                            <a href="/homeAfterLogin/<%=email%>" rel="home">
+                            <a href="/home" rel="home">
                                 <img src="/images/newlogo.png" alt="image">
                             </a>
                         </div>
@@ -67,7 +67,7 @@
                             <nav id="mainnav" class="mainnav float-left">
                                 <ul class="menu">
                                     <li class="home">
-                                        <a href="/homeAfterLogin/<%=email%>">Home</a>
+                                        <a href="/home">Home</a>
                                     </li>
                                     <li><a href="/listingfull">Listing</a>
                                         <!-- <ul class="submenu"> 
@@ -85,13 +85,13 @@
                                         </li>
                                     </ul>/.submenu -->
                                     </li>
-                                    <li><a href="/blog/<%=email%>">Blog</a>
-                                        <ul class="submenu">
-                                            <li><a href="/blog./<%=email%>l">Blog</a>
+                                    <li><a href="/blog">Blog</a>
+                                        <!-- <ul class="submenu">
+                                            <li><a href="/blog">Blog</a>
                                             </li>
-                                            <li><a href="/blogsingle/<%=email%>">Blog Single</a>
+                                            <li><a href="/blogsingle">Blog Single</a>
                                             </li>
-                                        </ul>
+                                        </ul> -->
                                         <!-- /.submenu -->
                                     </li>
                                     <li><a href="/page-pricing">Pricing</a>
@@ -221,30 +221,7 @@
 
                             <div class="main-single">
                                 <div class="comments-area">
-                                    <ol class="comment-list">
-                                        <li class="comment">
-                                            <article class="comment-body clearfix">
-                                                <div class="comment-author">
-                                                    <img src="/images/blog/c1.jpg" alt="image">
-                                                </div>
-                                                <!-- .comment-author -->
-                                                <div class="comment-text">
-                                                    <div class="comment-metadata">
-                                                        <h5><a href="#">Charles Rodriguez</a></h5>
-                                                    </div>
-                                                    <!-- .comment-metadata -->
-                                                    <div class="comment-content">
-                                                        <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias dignissimos ducimus qui blanditiis praesentium
-                                                            voluptatum deleniti atque corrupti quos dolores et quas molestias</p>
-                                                    </div>
-                                                    <!-- .comment-content -->
-                                                </div>
-                                                <!-- /.comment-text -->
-                                            </article>
-                                            <!-- .comment-body -->
-                                        </li>
-                                        <!-- #comment-## -->
-                                    </ol>
+                                    
                                     <!-- .comment-list -->
 
                                     <div class="comment-respond" id="respond">
@@ -425,7 +402,8 @@
                     <div class="widget widget_text widget_info">
                         <h5 class="widget-title">About Us</h5>
                         <div class="textwidget">
-                            <p>Lorem ipsum dolor sit amet, luctus pos semper felis consectetuer hendrerit, im varius enim, tellus tincidunt tellus est sed</p>
+                            <p>The BCC unit of the Brahman Organization of India is one of the largest non-profit platforms in India, with the most listing categories. We work in practically every industry, therefore we can make a difference in any! We welcome
+                                Brahmins from all industries to join our network of enterprises. Automobiles, education, electronics, business-to-business services such as advertising, are just a few examples and a variety of other industries.</p>
                         </div>
                         <!-- /.textwidget -->
                         <ul class="flat-infomation">
@@ -657,9 +635,9 @@
 
     <script src="/javascript/main.js"></script>
     <script>
-        function gotoaddlisting(){
-        location.href="/addListingPage/<%=email%>"
-      }
+        function gotoaddlisting() {
+            location.href = "/addListingPage/"
+        }
     </script>
 </body>
 

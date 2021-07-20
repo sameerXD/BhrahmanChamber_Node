@@ -674,17 +674,17 @@ app.get("/renewSubscription/:email", requireAuth, (req, res) => {
 app.get("/home", (req, res) => {
   res.render("index");
 });
-app.get("/blog/:email", (req, res) => {
-  res.render("blog", { email: req.params.email });
+app.get("/blog/", (req, res) => {
+  res.render("blog");
 });
-app.get("/blogsingle/:email", (req, res) => {
-  res.render("blog-single", { email: req.params.email });
+app.get("/blogsingle/", (req, res) => {
+  res.render("blog-single");
 });
-app.get("/blogBCC/:email", (req, res) => {
-  res.render("BCC", { email: req.params.email });
+app.get("/blogBCC/", (req, res) => {
+  res.render("BCC");
 });
-app.get("/blogListings/:email", (req, res) => {
-  res.render("Listings", { email: req.params.email });
+app.get("/blogListings/", (req, res) => {
+  res.render("Listings");
 });
 app.get("/page-pricing", (req, res) => {
   res.render("page-pricing");
@@ -1075,7 +1075,8 @@ app.get("/getGallery", (req, res) => {
 
 //get req for allAddlisting for signed in users
 app.get("/allAddlisting", requireAuth, (req, res) => {
-  let sql = "SELECT * FROM `add_listing`";
+  let sql =
+    "SELECT * FROM `add_listing` INNER JOIN users ON add_listing.email = users.email";
   sqlCon.query(sql, (err, result) => {
     if (err) throw err;
     res.send(result);
@@ -1088,9 +1089,17 @@ app.get("/homeAfterLogin/:email", requireAuth, checkCurrentUser, (req, res) => {
     "SELECT * FROM `add_listing` INNER JOIN users ON add_listing.email = users.email ";
   sqlCon.query(sql, (err, result) => {
     if (err) throw err;
-    res.render("homewithlogin", {
-      email: req.params.email,
-      listing: result,
+    const listing = result;
+    let sql1 = "select * from gallery";
+    sqlCon.query(sql1, (err, result1) => {
+      if (err) console.log(err);
+      console.log(result1);
+
+      res.render("homewithlogin", {
+        email: req.params.email,
+        listing: listing,
+        gallery: result1,
+      });
     });
   });
 });
@@ -1133,7 +1142,8 @@ app.post("/updateProfile", requireAuth, (req, res) => {
 });
 //admin get all users
 app.get("/admin/getAllUsers", requireAuth, (req, res) => {
-  let sql = "SELECT email, name, mobileNumber, companyName, plan FROM `users`";
+  let sql =
+    "SELECT email, name, mobileNumber, companyName, plan,access FROM `users`";
   sqlCon.query(sql, (err, result) => {
     if (err) throw err;
     // res.send(result);
@@ -1173,7 +1183,7 @@ app.post("/adminLogin", (req, res) => {
         res.cookie("jwt", token, { maxAge: maxAge * 1000, httpOnly: true });
         res.status(201).json({ user: req.body.email });
       } else {
-        res.status(400).json({ error: "Incorrect Password!" });
+        res.status(400).json({ error: { password: "Incorrect Password!" } });
       }
     }
   });
@@ -1222,7 +1232,12 @@ app.get("/logOut", (req, res) => {
   res.redirect("/home");
 });
 
-//forget password
+//forget password user
+
+app.get("/userForgetPassword", (req, res) => {
+  res.render("userForgetPassword");
+});
+
 app.post("/forgetPassword", (req, res) => {
   let email = req.body.email;
   console.log(email, " forgot his/her password");
@@ -1261,11 +1276,11 @@ app.get("/changePassword/:urlToken", (req, res) => {
         res.status(400).json({ error: { token: "Invalid Token" } });
         res.redirect("/home");
       } else {
-        res.cookie("jwtUrl", req.params.urlToken, {
+        res.cookie("urlJwt", req.params.urlToken, {
           maxAge: 24 * 60 * 60,
           httpOnly: true,
         });
-        res.render("forgetPassword", { email: decodedToken.id });
+        res.render("changePasswordForUser", { email: decodedToken.id });
       }
     });
   } else {
@@ -1278,7 +1293,135 @@ app.post("/changePassword", checkCurrentUser, (req, res) => {
   var cookies = parseCookies(req);
   //console.log("cookies ", cookies);
 
-  let urlToken = cookies.jwtUrl;
+  let urlToken = cookies.urlJwt;
+  console.log(urlToken);
+
+  jwt.verify(urlToken, "urlStringSecret", (err, decodedToken) => {
+    if (err) {
+      console.log(err);
+      res.render("/home");
+    } else {
+      if (req.body.password === req.body.confirmPassword) {
+        let passStrength = passwordStrength(req.body.password, defaultOptions);
+        console.log("password strength ", passStrength.value);
+        if (passStrength.value === "Too weak") {
+          console.log("paswword weak cought");
+          res
+            .status(400)
+            .json({ error: { password: "password is too easy  " } });
+        } else {
+          console.log(decodedToken);
+          res.status(200).json({ user: "password changed" });
+          changePassword(req.body, decodedToken.id);
+        }
+      } else {
+        res
+          .status(400)
+          .json({ error: { password: "password is not matching  " } });
+      }
+    }
+  });
+});
+
+//change password for logined users
+app.get("/changePasswordForLogin/:email", requireAuth, (req, res) => {
+  res.render("userChangePassword", { email: req.params.email });
+});
+
+app.post("/changePasswordForLogin/", requireAuth, (req, res) => {
+  if (req.body.password === req.body.confirmPassword) {
+    var cookies = parseCookies(req);
+    console.log(cookies.jwt);
+    const token = cookies.jwt;
+
+    if (req.body.password === req.body.confirmPassword) {
+      let passStrength = passwordStrength(req.body.password, defaultOptions);
+      console.log("password strength ", passStrength.value);
+      if (passStrength.value === "Too weak") {
+        console.log("paswword weak cought");
+        res.status(400).json({ error: { password: "password is too easy  " } });
+      } else {
+        jwt.verify(token, "stringSecret", (err, decodedToken) => {
+          console.log(decodedToken);
+          res.status(200).json({ user: "password changed" });
+          changePassword(req.body, decodedToken.id);
+        });
+      }
+    } else {
+      res
+        .status(400)
+        .json({ error: { password: "password is not matching  " } });
+    }
+  }
+});
+
+//forget password admin
+app.get("/admin/forgetPassword", (req, res) => {
+  res.render("adminForgetPasswordWithoutLogin");
+});
+app.post("/admin/forgetPassword", (req, res) => {
+  let email = req.body.email;
+  console.log(email, " forgot his/her password");
+
+  let sql = "SELECT email FROM adminlogin WHERE email = ?";
+
+  sqlCon.query(sql, [email], async (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    if (result.length > 0) {
+      //create url token
+      const urlToken = await createTokenForUrl(email);
+
+      var mailOptions = {
+        from: "sameer.vashisth.egs@gmail.com",
+        to: req.body.email,
+        subject: "Welcome To Brahman Chamber Of Commerce",
+        text: "Forget Password",
+        html: `<h1>Please change your password by clicking the link below</h1><br>
+  <a href = 'http://localhost:3000/admin/changePassword/${urlToken}'>Link</a>`,
+      };
+      mailUser(mailOptions);
+      res.status(201).json({ user: email });
+    } else {
+      res.status(400).json({ error: { email: "email doesnt exist" } });
+    }
+  });
+});
+
+//change password for logined admin
+app.get("/admin/changePasswordForLogin/:email", requireAuth, (req, res) => {
+  res.render("adminChangePassword", { email: req.params.email });
+});
+
+app.get("/admin/changePassword/:urlToken", (req, res) => {
+  if (req.params.urlToken) {
+    jwt.verify(req.params.urlToken, "urlStringSecret", (err, decodedToken) => {
+      if (err) {
+        console.log(err);
+        res.status(400).json({ error: { token: "Invalid Token" } });
+        res.redirect("/home");
+      } else {
+        console.log(decodedToken);
+
+        res.cookie("urlJwt", req.params.urlToken, {
+          maxAge: 24 * 60 * 60,
+          httpOnly: true,
+        });
+        res.render("adminForgetPassword", { email: decodedToken.id });
+      }
+    });
+  } else {
+    res.status(400).json({ error: { token: "No Token" } });
+    res.redirect("/home");
+  }
+});
+
+app.post("/admin/changePassword", checkCurrentUser, (req, res) => {
+  var cookies = parseCookies(req);
+  //console.log("cookies ", cookies);
+
+  let urlToken = cookies.urlJwt;
   console.log(urlToken);
 
   jwt.verify(urlToken, "urlStringSecret", (err, decodedToken) => {
@@ -1287,22 +1430,58 @@ app.post("/changePassword", checkCurrentUser, (req, res) => {
       res.render("/home");
     } else {
       console.log("user is paying", decodedToken);
-      req.user = decodedToken.id;
-      changePassword(req.body, req.user);
+
+      if (req.body.password === req.body.confirmPassword) {
+        let passStrength = passwordStrength(req.body.password, defaultOptions);
+        console.log("password strength ", passStrength.value);
+        if (passStrength.value === "Too weak") {
+          console.log("paswword weak cought");
+          res
+            .status(400)
+            .json({ error: { password: "password is too easy  " } });
+        } else {
+          console.log(decodedToken);
+          res.status(200).json({ user: "password changed" });
+          adminChangePassword(req.body, decodedToken.id);
+        }
+      } else {
+        res
+          .status(400)
+          .json({ error: { password: "password is not matching  " } });
+      }
     }
   });
 });
 
-//change password for logined users
-app.get("/changePasswordForLogin/:email", requireAuth, (req, res) => {
-  res.render("forgetPassword", { email: req.params.email });
-});
+app.post(
+  "/admin/changePasswordLogedIn",
+  requireAuth,
+  checkCurrentUser,
+  (req, res) => {
+    var cookies = parseCookies(req);
+    console.log(cookies.jwt);
+    const token = cookies.jwt;
 
-app.post("changePasswordForLogin/:email", requireAuth, (req, res) => {
-  if (req.body.password === req.body.confirmPassword) {
-    changePassword(req.body, req.params.email);
+    if (req.body.password === req.body.confirmPassword) {
+      let passStrength = passwordStrength(req.body.password, defaultOptions);
+      console.log("password strength ", passStrength.value);
+      if (passStrength.value === "Too weak") {
+        console.log("paswword weak cought");
+        res.status(400).json({ error: { password: "password is too easy  " } });
+      } else {
+        jwt.verify(token, "stringSecret", (err, decodedToken) => {
+          console.log(decodedToken);
+          res.status(200).json({ user: "password changed" });
+          adminChangePassword(req.body, decodedToken.id);
+        });
+      }
+    } else {
+      res
+        .status(400)
+        .json({ error: { password: "password is not matching  " } });
+    }
   }
-});
+);
 //functions----------------------------------------------------------------------------------------------------------------
 
 //function to push gallery array into database
@@ -1533,6 +1712,18 @@ async function changePassword(body, email) {
   sqlCon.query(sql, [hashed, email], (err, result) => {
     if (err) console.log(err);
     console.log("password updated", sql);
+  });
+}
+
+async function adminChangePassword(body, email) {
+  console.log(" body", body, " email ", email);
+  const salt = await bcrypt.genSalt(10);
+  const hashed = await bcrypt.hash(body.password, salt);
+
+  let sql = "update adminlogin set password = ? where email = ?";
+  sqlCon.query(sql, [hashed, email], (err, result) => {
+    if (err) console.log(err);
+    console.log("admin password updated");
   });
 }
 

@@ -128,12 +128,9 @@
                     </li>
                     <li>
                       <a href="/blog">Blog</a>
-                      <ul class="submenu">
-                        <li><a href="/blog">Blog</a></li>
-                        <li><a href="/blogsingle">Blog Single</a></li>
-                      </ul>
+
                       <!-- /.submenu -->
-                    </li>
+                  </li>
                     <li>
                       <a href="/page-pricing">Pricing</a>
                       <!-- <ul class="submenu"> 
@@ -154,10 +151,18 @@
                                     </ul> -->
                     </li>
                     <li>
-                      <a href="/page-user/<%=email%>"
-                        ><i class="fa fa-user"></i> <%=user.name%></a
-                      >
-                    </li>
+                      <a href="/page-user/"><i class="fa fa-user"></i>
+                          <%=user.name%>
+                      </a>
+                      <ul class="submenu" style="border-radius: 10px;">
+                          <li><a href="/changePasswordForLogin/<%=user.email%>">Change Password</a></li>
+                          <li> <a href="/renewSubscription/<%= user.email%>">Renew</a></li>
+                          <!-- <li>
+                              <a href="/renewSubscription/<%= user.email%>" style=""></a>Renew subscription
+                              </a>
+                          </li> -->
+                      </ul>
+                  </li>
                     <!-- <li>
                       <a data-toggle="modal" href="#popup_login"
                         ><i class="fa fa-user"></i> Sign in</a
@@ -655,12 +660,19 @@
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="wrap-flat-product clearfix">
-              <% for(var i=0; i < listing.length; i++) { %>
+          <div id="list"></div>
+          <!-- <div class="row"> -->
+            <!-- <div class="wrap-flat-product clearfix"> -->
+              <!-- <% for(var i=0; i < listing.length; i++) { %> <% var inside =
+              false;%><% for(var j=0; j < gallery.length; j++) { %> <%if
+              (gallery[j].addListingId ===listing[i].id) { %> <%inside= true; %>
               <div class="flat-product">
                 <div class="featured-product">
-                  <img src="/images/services/1.jpg" alt="image" />
+                  <img
+                    src="/images/uploaded_images/<%=gallery[j].photo%>"
+                    alt="image"
+                  />
+
                   <div class="rate-product">
                     <div class="link-review clearfix">
                       <div class="button-product float-left">
@@ -701,14 +713,57 @@
                   </div>
                 </div>
               </div>
-              <% } %>
+              <% } %> <% } %> <% if(inside == false){%>
+              <div class="flat-product">
+                <div class="featured-product">
+                  <div class="rate-product">
+                    <div class="link-review clearfix">
+                      <div class="button-product float-left">
+                        <button
+                          type="button"
+                          class="flat-button"
+                          onclick="location.href='#'"
+                        >
+                          <%= listing[i].category %>
+                        </button>
+                      </div>
+                      <div class="start-review float-right">
+                        <span class="flat-start">
+                          <i class="fa fa-star"></i>
+                          <i class="fa fa-star"></i>
+                          <i class="fa fa-star"></i>
+                          <i class="fa fa-star"></i>
+                          <i class="fa fa-star"></i>
+                        </span>
+                        <a href="#" class="review">( 2 reviewers )</a>
+                      </div>
+                    </div>
+                    <div class="info-product">
+                      <h6 class="title">
+                        <a href="#"><%= listing[i].businessName %></a>
+                      </h6>
+                      <p><%= listing[i].address %></p>
+                      <a href="#" class="heart">
+                        <i class="fa fa-heart-o"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="content-product">
+                  <div class="tm"><%= listing[i].name %></div>
+                  <div class="text">
+                    <p><%= listing[i].description %></p>
+                  </div>
+                </div>
+              </div>
+              <% } %> <% } %> -->
 
-              <div class="load-more text-center">
+              <!-- <div class="load-more text-center">
                 <button type="button" class="flat-button">Load More</button>
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       </section>
 
       <!-- <section class="flat-row section-download parallax parallax2">
@@ -964,11 +1019,8 @@
               <div class="widget widget_text widget_info">
                 <h5 class="widget-title">About Us</h5>
                 <div class="textwidget">
-                  <p>
-                    Lorem ipsum dolor sit amet, luctus pos semper felis
-                    consectetuer hendrerit, im varius enim, tellus tincidunt
-                    tellus est sed
-                  </p>
+                  <p>The BCC unit of the Brahman Organization of India is one of the largest non-profit platforms in India, with the most listing categories. We work in practically every industry, therefore we can make a difference in any! We welcome
+                    Brahmins from all industries to join our network of enterprises. Automobiles, education, electronics, business-to-business services such as advertising, are just a few examples and a variety of other industries.</p>
                 </div>
                 <!-- /.textwidget -->
                 <ul class="flat-infomation">
@@ -1061,49 +1113,8 @@
             <div class="col-lg-3">
               <div class="widget widget_contact">
                 <h5 class="widget-title">Gallery</h5>
-                <ul class="clearfix">
-                  <li>
-                    <div class="thumb">
-                      <a href="#" class="effect">
-                        <img src="/images/flickr/1.jpg" alt="image" />
-                      </a>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="thumb">
-                      <a href="#" class="effect">
-                        <img src="/images/flickr/2.jpg" alt="image" />
-                      </a>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="thumb">
-                      <a href="#" class="effect">
-                        <img src="/images/flickr/3.jpg" alt="image" />
-                      </a>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="thumb">
-                      <a href="#" class="effect">
-                        <img src="/images/flickr/4.jpg" alt="image" />
-                      </a>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="thumb">
-                      <a href="#" class="effect">
-                        <img src="/images/flickr/5.jpg" alt="image" />
-                      </a>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="thumb">
-                      <a href="#" class="effect">
-                        <img src="/images/flickr/6.jpg" alt="image" />
-                      </a>
-                    </div>
-                  </li>
+                <ul class="clearfix" id = "footerGalley">
+                  
                 </ul>
               </div>
             </div>
@@ -1316,7 +1327,7 @@
     <script src="/revolution/js/slider.js"></script>
 
     <!-- payment gateway -->
-    <script>
+    <!-- <script>
       let form = document.getElementById("searchform");
       form.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -1389,6 +1400,151 @@
             }
           });
       });
+    </script> -->
+    <script>
+      let form = document.getElementById("searchform");
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        document.getElementById("search").innerHTML = "";
+        let formdata = new FormData(this);
+        fetch("/search", {
+          method: "post",
+          body: formdata,
+        })
+          .then(function (response) {
+            return response.text();
+          })
+          .then(function (text) {
+            let gallery = new XMLHttpRequest();
+            gallery.open("GET", "/getGallery", true);
+            gallery.send();
+            gallery.onload = function () {
+              console.log("get gallery", gallery.response);
+              let jsonImages = JSON.parse(gallery.response);
+              let jsonListing = JSON.parse(text);
+              let divs = "";
+
+              for (let x in jsonListing) {
+                for (let i in jsonImages) {
+                  console.log(
+                    "compare",
+                    jsonImages[i].addListingId,
+                    jsonListing[x].id
+                  );
+
+                  if (jsonImages[i].addListingId == jsonListing[x].id) {
+                    console.log("inside image");
+
+                    div = `
+      <div class="wrap-flat-product clearfix">          
+              <div class="flat-product">
+                <div class="featured-product">
+                  <img src="/images/uploaded_images/${jsonImages[i].photo}" alt="image" />
+                  <div class="rate-product">
+                    <div class="link-review clearfix">
+                      
+                        <div class="button-product float-left">
+                          <button
+                            type="button"
+                            class="flat-button"
+                            onclick="location.href='#'"
+                          >
+                         ${jsonListing[x].category} 
+                          </button>
+                        </div>
+                        <div class="start-review float-right">
+                          <span class="flat-start">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                          </span>
+                          <a href="#" class="review">( 2 reviewers )</a>
+                        </div>
+                      </div>
+                      <div class="info-product">
+                        <h6 class="title">
+                          <a href="#">${jsonListing[x].businessName}</a>
+                        </h6>
+                        <p>${jsonListing[x].address}</p>
+                        <a href="#" class="heart">
+                          <i class="fa fa-heart-o"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="content-product">
+                    <div class="tm">${jsonListing[x].name}</div>
+                    <div class="text">
+                      <p>
+                        ${jsonListing[x].description}
+                      </p>
+                    </div>
+                  </div>    
+              </div> 
+            
+          </div>`;
+                    document.getElementById("search").innerHTML += div;
+                  } else {
+                    div = `
+      <div class="wrap-flat-product clearfix">          
+              <div class="flat-product">
+                <div class="featured-product">
+                  <img src="/images/services/1.jpg" alt="image" />
+
+                  <div class="rate-product">
+                    <div class="link-review clearfix">
+                      
+                        <div class="button-product float-left">
+                          <button
+                            type="button"
+                            class="flat-button"
+                            onclick="location.href='#'"
+                          >
+                         ${jsonListing[x].category} 
+                          </button>
+                        </div>
+                        <div class="start-review float-right">
+                          <span class="flat-start">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                          </span>
+                          <a href="#" class="review">( 2 reviewers )</a>
+                        </div>
+                      </div>
+                      <div class="info-product">
+                        <h6 class="title">
+                          <a href="#">${jsonListing[x].businessName}</a>
+                        </h6>
+                        <p>${jsonListing[x].address}</p>
+                        <a href="#" class="heart">
+                          <i class="fa fa-heart-o"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="content-product">
+                    <div class="tm">${jsonListing[x].name}</div>
+                    <div class="text">
+                      <p>
+                        ${jsonListing[x].description}
+                      </p>
+                    </div>
+                  </div>    
+              </div> 
+            
+          </div>`;
+                  }
+                }
+                document.getElementById("search").innerHTML += div;
+              }
+            };
+          });
+      });
     </script>
     <script>
       //         axios.post('/order').then((info)=>{
@@ -1453,5 +1609,157 @@
         location.href = "/addListingPage/<%=email%>";
       }
     </script>
+
+<script>
+  let addListings = new XMLHttpRequest();
+  addListings.open("GET", "/allAddlisting", true);
+  addListings.send();
+  addListings.onload = function () {
+    console.log("list of add listing", addListings.response);
+    let gallery = new XMLHttpRequest();
+  gallery.open("GET", "/getGallery", true);
+  gallery.send();
+  gallery.onload = function () {
+    console.log("get gallery", gallery.response);
+    let jsonImages = JSON.parse(gallery.response);
+    let jsonListing = JSON.parse(addListings.response);
+    let com = "";
+    let footerGal ="";
+    let galCount = 0;
+    for( let x in jsonListing){
+
+      for(let i in jsonImages){
+        if(jsonImages[i].addListingId === jsonListing[x].id){
+              //console.log(i, jsonImages[i]);
+               com =`  <div class="row">
+        <div class="wrap-flat-product clearfix">
+          
+          <div class="flat-product">
+            <div class="featured-product">
+              <img src="/images/uploaded_images/${jsonImages[i].photo}" alt="image" />
+              <div class="rate-product">
+                <div class="link-review clearfix">
+                  
+                    <div class="button-product float-left">
+                      <button
+                        type="button"
+                        class="flat-button"
+                        onclick="location.href='#'"
+                      >
+                       ${jsonListing[x].category}
+                      </button>
+                    </div>
+                    <div class="start-review float-right">
+                      <span class="flat-start">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                      </span>
+                      <a href="#" class="review">( 2 reviewers )</a>
+                    </div>
+                  </div>
+                  <div class="info-product">
+                    <h6 class="title">
+                      <a href="#">${jsonListing[x].businessName}</a>
+                    </h6>
+                    <p>${jsonListing[x].address}</p>
+                    <a href="#" class="heart">
+                      <i class="fa fa-heart-o"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="content-product">
+                <div class="tm">${jsonListing[x].name}</div>
+                <div class="text">
+                    <p>${jsonListing[x].description}</p>
+                  </div>
+               
+              </div>    
+          </div>
+        
+
+        
+        </div>
+      </div>`;
+      
+      galCount++;
+      let footerGal = `<li>
+                <div class="thumb">
+                  <a href="#" class="effect">
+                    <img src="/images/uploaded_images/${jsonImages[i].photo}" alt="image" />
+                  </a>
+                </div>
+              </li>`;
+              if(galCount<=6){
+          document.getElementById("footerGalley").innerHTML+=footerGal;
+        }
+        document.getElementById("list").innerHTML+=com;
+      //console.log(com);
+      
+             
+        }else{
+          com =`  <div class="row">
+        <div class="wrap-flat-product clearfix">
+          
+          <div class="flat-product">
+            <div class="featured-product">
+              <img src="/images/services/1.jpg" alt="image" />
+              <div class="rate-product">
+                <div class="link-review clearfix">
+                  
+                    <div class="button-product float-left">
+                      <button
+                        type="button"
+                        class="flat-button"
+                        onclick="location.href='#'"
+                      >
+                       ${jsonListing[x].category}
+                      </button>
+                    </div>
+                    <div class="start-review float-right">
+                      <span class="flat-start">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                      </span>
+                      <a href="#" class="review">( 2 reviewers )</a>
+                    </div>
+                  </div>
+                  <div class="info-product">
+                    <h6 class="title">
+                      <a href="#">${jsonListing[x].businessName}</a>
+                    </h6>
+                 
+                    <a href="#" class="heart">
+                      <i class="fa fa-heart-o"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="content-product">
+                <div class="tm">${jsonListing[x].name}</div>
+               
+              </div>    
+          </div>
+        
+
+        
+        </div>
+      </div>`
+
+        }
+        
+      }
+      document.getElementById("list").innerHTML+=com;
+      
+    }
+  };
+  };
+</script>
   </body>
 </html>
