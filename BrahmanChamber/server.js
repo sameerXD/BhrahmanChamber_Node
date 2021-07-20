@@ -219,9 +219,9 @@ app.post("/order/:plan", (req, res) => {
       amount1 = tempSubscriptionPlans.Professional.price;
     } else if (req.params.plan == "Business") {
       amount1 = tempSubscriptionPlans.Business.price;
-    } else if (req.params.plan == "Enterprise") {
-      amount1 = tempSubscriptionPlans.Enterprise.price;
-    }
+    } //else if (req.params.plan == "Enterprise") {
+    //   amount1 = tempSubscriptionPlans.Enterprise.price;
+    // }
   } else {
     if (req.params.plan == "Starter") {
       amount1 = subscriptionPlans.Starter.price;
@@ -241,10 +241,12 @@ app.post("/order/:plan", (req, res) => {
     receipt: "order_rcptid_11",
   };
 
-  razorpay.orders.create(options, (err, order) => {
-    console.log(order);
-    res.json(order);
-  });
+  if (amount1 !== 0) {
+    razorpay.orders.create(options, (err, order) => {
+      console.log(order);
+      res.json(order);
+    });
+  }
 });
 
 //check the authenticity of order and if the order was successful
@@ -945,6 +947,9 @@ app.get("/allPlans", (req, res) => {
 //get plans for signup subscription
 
 app.get("/plans/:email/:urlToken", (req, res) => {
+  //setting the coupon object to default to remove the settings
+  subscriptionPlans.isEdited = false;
+  subscriptionPlans.isCouponApllied = false;
   if (req.params.urlToken) {
     jwt.verify(req.params.urlToken, "urlStringSecret", (err, decodedToken) => {
       if (err) {
@@ -968,7 +973,7 @@ app.get("/plans/:email/:urlToken", (req, res) => {
 });
 
 //apply coupon
-app.post("/applyCoupon/:email", (req, res) => {
+app.post("/applyCoupon/:email", async (req, res) => {
   let coupon = req.body.coupon;
   let email = req.params.email;
 
@@ -978,7 +983,7 @@ app.post("/applyCoupon/:email", (req, res) => {
     if (err) throw err;
     if (result.length === 0) {
       let sql = "SELECT * FROM couponsystem WHERE coupon = ?";
-      sqlCon.query(sql, [coupon], (err, result) => {
+      sqlCon.query(sql, [coupon], async (err, result) => {
         if (err) throw err;
 
         if (
@@ -992,46 +997,91 @@ app.post("/applyCoupon/:email", (req, res) => {
 
           if (subscriptionPlans.isEdited === false) {
             //and saving the coupon number
-            tempSubscriptionPlans.coupon = coupon;
+            if (result[0].couponAmount !== 100) {
+              tempSubscriptionPlans.coupon = coupon;
 
-            //copying in tempplans so that the amount can be decreased
-            console.log("temp ", tempSubscriptionPlans);
-            console.log("orignal", subscriptionPlans);
+              //copying in tempplans so that the amount can be decreased
+              console.log("temp ", tempSubscriptionPlans);
+              console.log("orignal", subscriptionPlans);
 
-            //changing the plans in temp object according to coupon
-            tempSubscriptionPlans.Starter.price =
-              subscriptionPlans.Starter.price -
-              (result[0].couponAmount / 100) * subscriptionPlans.Starter.price;
+              //changing the plans in temp object according to coupon
+              tempSubscriptionPlans.Starter.price =
+                subscriptionPlans.Starter.price -
+                (result[0].couponAmount / 100) *
+                  subscriptionPlans.Starter.price;
 
-            tempSubscriptionPlans.Professional.price =
-              subscriptionPlans.Professional.price -
-              (result[0].couponAmount / 100) *
-                subscriptionPlans.Professional.price;
+              tempSubscriptionPlans.Professional.price =
+                subscriptionPlans.Professional.price -
+                (result[0].couponAmount / 100) *
+                  subscriptionPlans.Professional.price;
 
-            tempSubscriptionPlans.Enterprise.price =
-              subscriptionPlans.Enterprise.price -
-              (result[0].couponAmount / 100) *
-                subscriptionPlans.Enterprise.price;
+              // tempSubscriptionPlans.Enterprise.price =
+              //   subscriptionPlans.Enterprise.price -
+              //   (result[0].couponAmount / 100) *
+              //     subscriptionPlans.Enterprise.price;
 
-            tempSubscriptionPlans.Business.price =
-              subscriptionPlans.Business.price -
-              (result[0].couponAmount / 100) * subscriptionPlans.Business.price;
-            console.log(tempSubscriptionPlans);
+              tempSubscriptionPlans.Business.price =
+                subscriptionPlans.Business.price -
+                (result[0].couponAmount / 100) *
+                  subscriptionPlans.Business.price;
+              console.log(tempSubscriptionPlans);
 
-            //changing isEdited to true
-            subscriptionPlans.isEdited = true;
+              //changing isEdited to true
+              subscriptionPlans.isEdited = true;
+              res.status(400).json({ error: coupon + " applied!" });
+            } else {
+              console.log("-------user", user);
 
-            res.send(coupon + " applied!");
+              const token = await createToken(req.params.email);
+              res.cookie("jwt", token, {
+                maxAge: maxAge * 1000,
+                httpOnly: true,
+              });
+              let plan = "Starter";
+
+              try {
+                if (Object.keys(user).length > 1) {
+                  console.log("new signUp");
+                  try {
+                    user = Object.assign(user, { plan: plan });
+
+                    saveUser(user);
+                  } catch (error) {
+                    console.log(error);
+                  }
+
+                  // res.status(201).json({ user: user.email, token });
+                } else if (Object.keys(user).length === 1) {
+                  console.log(
+                    "inside renew subscription almost done payment done"
+                  );
+                  renewSubscription(plan);
+                }
+
+                //as this payment was done by coupon saving this information to db so that user doesnt apply coupon again
+                let sql =
+                  "INSERT INTO `appliedcoupon` (`id`, `coupon`, `email`) VALUES (NULL, ? ,?) ";
+                sqlCon.query(sql, [coupon, req.params.email], (err, result) => {
+                  if (err) throw err;
+                  console.log("coupon applied inserted in database");
+                });
+                //as the coupon is applied subtract number of users from the coupon table
+                subtractUser(coupon);
+              } catch (error) {
+                console.log(error);
+              }
+
+              res.status(201).json({ user: req.params.email });
+            }
           } else {
-            res.send(coupon + " already applied");
+            res.status(400).json({ error: " already applied" });
           }
         } else {
-          console.log(coupon + " is not valid");
-          res.send("invalid coupon");
+          res.status(400).json({ error: " invalid coupon" });
         }
       });
     } else {
-      res.send("You have already used the coupon");
+      res.status(400).json({ error: "You have already used the coupon" });
     }
   });
 });

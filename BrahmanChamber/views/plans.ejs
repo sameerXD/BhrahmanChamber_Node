@@ -18,8 +18,6 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </head>
   <body>
-    
-
     <h3 id="couponResult"></h3>
     <link
       href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
@@ -154,9 +152,17 @@
         </div> -->
       </div>
     </div>
-    <form id="applyCoupon" style="margin-left: auto;margin-right: auto;display: block;    justify-content: center;
-    align-items: center;
-    text-align: center;">
+    <form
+      id="applyCoupon"
+      style="
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      "
+    >
       <input type="text" name="coupon" />
       <button type="submit" class="btn btn-primary">apply coupon</button>
     </form>
@@ -307,19 +313,20 @@
           ).innerHTML = `upto ${jsonBody.Business.noOfListing} number of listing  `;
 
           //enterprice plan
-          document.getElementById("enterprisePrice").innerHTML =
-            jsonBody.Enterprise.price / 100;
-          document.getElementById(
-            "enterpriseAddListing"
-          ).innerHTML = `upto ${jsonBody.Enterprise.noOfListing} number of listing  `;
+          // document.getElementById("enterprisePrice").innerHTML =
+          //   jsonBody.Enterprise.price / 100;
+          // document.getElementById(
+          //   "enterpriseAddListing"
+          // ).innerHTML = `upto ${jsonBody.Enterprise.noOfListing} number of listing  `;
         };
       }
     </script>
 
-  
     <script>
       let form = document.getElementById("applyCoupon");
       form.addEventListener("submit", function (e) {
+        showPlans();
+
         e.preventDefault();
         let formData = new FormData(this);
         fetch("/applyCoupon/<%=email%>", {
@@ -327,11 +334,19 @@
           body: formData,
         })
           .then(function (response) {
+            showPlans();
             return response.text();
           })
           .then(function (text) {
             console.log(text);
-            document.getElementById("couponResult").innerHTML = text;
+            let couponJson = JSON.parse(text);
+            if (couponJson.user) {
+              location.href = "/homeAfterLogin/" + couponJson.user;
+            } else if (couponJson.error) {
+              document.getElementById("couponResult").innerHTML =
+                couponJson.error;
+            }
+
             generateOrder();
             showPlans();
           });
