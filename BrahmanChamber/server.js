@@ -496,12 +496,12 @@ app.post("/is-order-complete/", async (req, res) => {
         subscriptionPlans.Professional.price
       ) {
         plan = "Professional";
-      } else if (
-        req.body.payload.payment.entity.amount ===
-        subscriptionPlans.Enterprise.price
-      ) {
-        plan = "Enterprise";
-      }
+      } //else if (
+      //   req.body.payload.payment.entity.amount ===
+      //   subscriptionPlans.Enterprise.price
+      // ) {
+      //   plan = "Enterprise";
+      // }
     }
 
     console.log(
