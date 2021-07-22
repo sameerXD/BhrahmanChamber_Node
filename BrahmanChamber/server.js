@@ -474,7 +474,7 @@ app.post("/is-order-complete/", async (req, res) => {
         sql,
         [tempSubscriptionPlans.coupon, user.email],
         (err, result) => {
-          if (err) throw err;
+          if (err) console.log(err);
           console.log("coupon applied inserted in database");
         }
       );
